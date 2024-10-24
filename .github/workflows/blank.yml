@@ -24,7 +24,7 @@ jobs:
           echo "[global]" > ~/.pip/pip.conf
           echo "index-url = https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
           echo "[auth]" >> ~/.pip/pip.conf
-          echo "https://incloudmaster.jfrog.io = $USERNAME:$API_KEY" >> ~/.pip/pip.conf
+          echo "https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple = $USERNAME:$API_KEY" >> ~/.pip/pip.conf
         env:
           USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
