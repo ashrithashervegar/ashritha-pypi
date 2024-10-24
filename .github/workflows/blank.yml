@@ -53,13 +53,10 @@ jobs:
           ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
           USERNAME: ${{ secrets.JFROG_USERNAME }}  # Use a secret for the username
         run: |
-          # Install JFrog CLI
-          curl -fL https://getcli.jfrog.io | sh
-          chmod +x jfrog
-          sudo mv jfrog /usr/local/bin/
-
-          # Configure JFrog CLI with the access token
-          jfrog rt c --url ${JFROG_PLATFORM_URL} --user ${USERNAME} --password ${ACCESS_TOKEN}
-
-          # Upload the package to the remote repository
-          jfrog rt u "path/to/hatch-showcase/*" "ashritha-pypi/"
+          PACKAGE_PATH="path/to/hatch-showcase/*"  # Update with actual path
+          REPO_URL="https://hts2.jfrog.io/artifactory/api/pypi/ashritha-pypi/"
+          
+          # Loop through each package and upload
+          for file in ${PACKAGE_PATH}; do
+            curl -X PUT -H "X-JFrog-Art-Api:${ACCESS_TOKEN}" -T "$file" "${REPO_URL}$(basename $file)"
+          done
