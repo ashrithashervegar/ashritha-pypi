@@ -36,12 +36,11 @@ jobs:
                   echo "[install]" >> ~/.pip/pip.conf
                   echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
-                  # Use the access token to install the package
+                  # Install the package using the access token
                   pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple \
                   --trusted-host hts2.jfrog.io \
                   hatch-showcase --no-cache-dir \
-                  --index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple
-
-                  # Alternatively, use curl to install if pip fails
-                  curl -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                  -O https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple/hatch-showcase/<version>/hatch-showcase-<version>.tar.gz
+                  --index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple \
+                  --user \
+                  --timeout=30 \
+                  --retries=3
