@@ -3,7 +3,7 @@ name: Install NumPy from Artifactory
 on:
   push:
     branches:
-      - main  # Change this to the branch you want to trigger on
+      - main
 
 jobs:
   install:
@@ -16,21 +16,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Use the desired Python version
+          python-version: '3.x'
+
+      - name: Check Artifactory URL
+        run: |
+          curl -I https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple
 
       - name: Configure pip to use Artifactory
         run: |
-          mkdir -p ~/.pip  # Create the .pip directory if it doesn't exist
+          mkdir -p ~/.pip
           echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://ashrithac:@Password24@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
-        env:
-          USERNAME: '<YOUR_USERNAME>'  # Replace with your Artifactory username
-          PASSWORD: '<YOUR_PASSWORD>'  # Replace with your Artifactory password
+          echo "index-url = https://${{ secrets.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }}@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
 
       - name: Install NumPy
         run: |
-          pip install numpy
+          pip install numpy --timeout=60
 
       - name: Verify installation
         run: |
-          python -c "import numpy"  # Verify NumPy is installed
+          python -c "import numpy"
