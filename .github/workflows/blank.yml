@@ -42,5 +42,5 @@ jobs:
           echo "[install]" >> ~/.pip/pip.conf
           echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
-          # Install the package
-          pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
+          # Install a different package (e.g., requests)
+          pip install requests --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
