@@ -1,46 +1,36 @@
-name: Install Pip Package from Artifactory
+name: Install Numpy from Artifactory
 
 on:
   push:
     branches:
-      - '*'
+      - main
 
 jobs:
-  install-package:
-    permissions:
-      id-token: write
-      contents: read
+  install-numpy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Get ID Token
-        id: get_id_token
-        run: |
-          ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=jfrog-github" | jq -r .value)
-          echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Exchange ID Token for Access Token
-        id: get_access_token
-        env:
-          ID_TOKEN: ${{ env.ID_TOKEN }}
-          JFROG_PLATFORM_URL: https://hts2.jfrog.io
-        run: |
-          ACCESS_TOKEN=$(curl -X POST -H "Content-Type: application/json" "${JFROG_PLATFORM_URL}/access/api/v1/oidc/token" \
-          -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq -r .access_token)
-          echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'  # Specify your Python version
 
-      - name: Install Package from Artifactory
-        env:
-          ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: ashrithac  # Replace with your JFrog username
-          REPO_URL: https://hts2.jfrog.io/artifactory/ashritha-pypi/
-        run: |
-          # Create a temporary pip configuration file
-          mkdir -p ~/.pip
-          echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://${USERNAME}:${ACCESS_TOKEN}@${REPO_URL}" >> ~/.pip/pip.conf
-          echo "[install]" >> ~/.pip/pip.conf
-          echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
+    - name: Generate OIDC token
+      id: oidc
+      run: |
+        echo "OIDC_TOKEN=$(echo ${{ secrets.OIDC_TOKEN }})" >> $GITHUB_ENV  # Replace with actual OIDC generation command if needed
 
-          # Install the desired package (e.g., requests or any other)
-          pip install requests --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
+    - name: Configure pip to use Artifactory
+      run: |
+        mkdir -p ~/.config/pip
+        echo "[global]" > ~/.config/pip/pip.conf
+        echo "extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.config/pip/pip.conf
+        echo "[auth]" >> ~/.config/pip/pip.conf
+        echo "<your-artifactory-url> = ${OIDC_TOKEN}" >> ~/.config/pip/pip.conf
+
+    - name: Install Numpy
+      run: |
+        pip install numpy
