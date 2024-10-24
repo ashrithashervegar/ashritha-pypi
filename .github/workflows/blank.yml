@@ -30,32 +30,35 @@ jobs:
           -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq .access_token | tr -d '"')
           echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
 
+      - name: Debug Environment Variables
+        run: |
+          echo "USERNAME=${{ secrets.JFROG_USERNAME }}"  # Ensure your JFrog username is stored in secrets
+          echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}"  # Be cautious about logging sensitive information
+
       - name: Install Internal Package
         env:
           ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: ashrithac  # Replace with your JFrog username
+          USERNAME: ${{ secrets.JFROG_USERNAME }}  # Use a secret for the username
         run: |
-          # Create a temporary pip configuration file
           mkdir -p ~/.pip
           echo "[global]" > ~/.pip/pip.conf
           echo "index-url = https://${USERNAME}:${ACCESS_TOKEN}@hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple" >> ~/.pip/pip.conf
           echo "[install]" >> ~/.pip/pip.conf
           echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
-          # Install the package using pip
           pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
 
       - name: Upload Package to Remote Repository
         env:
           ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: ashrithac  # Replace with your JFrog username
+          USERNAME: ${{ secrets.JFROG_USERNAME }}  # Use a secret for the username
         run: |
           # Install JFrog CLI
           curl -fL https://getcli.jfrog.io | sh
           chmod +x jfrog
           sudo mv jfrog /usr/local/bin/
 
-          # Configure JFrog CLI
+          # Configure JFrog CLI with the access token
           jfrog rt c --url ${JFROG_PLATFORM_URL} --user ${USERNAME} --password ${ACCESS_TOKEN}
 
           # Upload the package to the remote repository
