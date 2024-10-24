@@ -1,4 +1,4 @@
-name: Install NumPy from Artifactory
+name: Install Requests from Artifactory
 
 on:
   push:
@@ -28,10 +28,10 @@ jobs:
           echo "[global]" > ~/.pip/pip.conf
           echo "index-url = https://${{ secrets.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }}@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
 
-      - name: Install NumPy
+      - name: Install Requests
         run: |
-          pip install numpy --timeout=60
+          pip install requests --timeout=60
 
       - name: Verify installation
         run: |
-          python -c "import numpy"
+          python -c "import requests"
