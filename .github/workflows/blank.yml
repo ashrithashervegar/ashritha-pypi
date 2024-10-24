@@ -1,4 +1,4 @@
-name: Install Pandas from Artifactory
+name: Install Requests with OIDC
 
 on:
   push:
@@ -18,20 +18,26 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Check Artifactory URL
+      - name: Fetch OIDC Token
+        id: oidc
         run: |
-          curl -I https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple
+          echo "Fetching OIDC token..."
+          TOKEN=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://incloudmaster.jfrog.io/artifactory/api/security/v1/token" | jq -r '.token')
+          echo "token=$TOKEN" >> $GITHUB_ENV
 
       - name: Configure pip to use Artifactory
         run: |
           mkdir -p ~/.pip
           echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://${{ secrets.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }}@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
+          echo "index-url = https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
+          echo "[auth]" >> ~/.pip/pip.conf
+          echo "basic-auth = ${{ env.token }}" >> ~/.pip/pip.conf
 
-      - name: Install Pandas
+      - name: Install Requests
         run: |
-          pip install pandas --timeout=60
+          pip install requests --timeout=60
 
       - name: Verify installation
         run: |
-          python -c "import pandas"
+          python -c "import requests"
