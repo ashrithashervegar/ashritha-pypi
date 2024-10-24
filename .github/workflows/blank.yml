@@ -1,0 +1,38 @@
+name: Install NumPy from Artifactory
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to trigger on
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Use the desired Python version
+
+      - name: Configure pip to use Artifactory
+        run: |
+          echo "[global]" > ~/.pip/pip.conf
+          echo "index-url = https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
+          echo "[auth]" >> ~/.pip/pip.conf
+          echo "<ARTIFACTORY_URL> = $USERNAME:$API_KEY" >> ~/.pip/pip.conf
+        env:
+          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
+          USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+
+      - name: Install NumPy
+        run: |
+          pip install numpy
+
+      - name: Verify installation
+        run: |
+          python -c "import numpy"  # Verify NumPy is installed
