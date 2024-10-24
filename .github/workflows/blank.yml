@@ -42,5 +42,5 @@ jobs:
           echo "[install]" >> ~/.pip/pip.conf
           echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
-          # Install a different package (e.g., requests)
+          # Install the desired package (e.g., requests or any other)
           pip install requests --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
