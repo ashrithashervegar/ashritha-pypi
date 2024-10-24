@@ -25,6 +25,9 @@ jobs:
                   -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq .access_token | tr -d '"')
                   echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
 
+            - name: Create pip configuration directory
+              run: mkdir -p ~/.pip
+
             - name: Configure pip
               run: |
                   echo "[global]" > ~/.pip/pip.conf
@@ -36,4 +39,4 @@ jobs:
               env:
                   ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
               run: |
-                  pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple --trusted-host hts2.jfrog.io nbim-some-internal-package
+                  pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple --trusted-host hts2.jfrog.io my_vulnerable_project-0.1.0-py3-none-any.whl
