@@ -27,7 +27,7 @@ jobs:
           JFROG_PLATFORM_URL: https://hts2.jfrog.io
         run: |
           ACCESS_TOKEN=$(curl -X POST -H "Content-Type: application/json" "${JFROG_PLATFORM_URL}/access/api/v1/oidc/token" \
-          -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq .access_token | tr -d '"')
+          -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq -r .access_token)
           echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
 
       - name: Debug Environment Variables
@@ -63,6 +63,16 @@ jobs:
           REPO_URL="https://hts2.jfrog.io/artifactory/api/pypi/ashritha-pypi/"
           
           # Loop through each package and upload
-          for file in "${PACKAGE_PATH}/hatch_showcase/"*; do  # Adjust if necessary
-            curl -X PUT -H "X-JFrog-Art-Api:${ACCESS_TOKEN}" -T "$file" "${REPO_URL}$(basename $file)"
+          for file in "${PACKAGE_PATH}/hatch_showcase/"*; do
+            if [[ -f "$file" ]]; then  # Check if the file exists
+              echo "Uploading $file..."
+              response=$(curl -X PUT -H "X-JFrog-Art-Api:${ACCESS_TOKEN}" -T "$file" "${REPO_URL}$(basename $file)" 2>&1)
+              echo "$response"
+              if [[ $? -ne 0 ]]; then
+                echo "Error uploading $file: $response"
+                exit 1
+              fi
+            else
+              echo "File $file does not exist."
+            fi
           done
