@@ -39,4 +39,4 @@ jobs:
               env:
                   ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
               run: |
-                  pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple --trusted-host hts2.jfrog.io my_vulnerable_project-0.1.0-py3-none-any.whl
+                  pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple --trusted-host hts2.jfrog.io dev-pypi-local/.pypi/hatch-showcase/
