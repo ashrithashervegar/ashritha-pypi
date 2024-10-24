@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get ID Token
+        id: get_id_token
         run: |
           ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
           "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=jfrog-github" | jq .value | tr -d '"')
           echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
 
       - name: Exchange ID Token for Access Token
+        id: get_access_token
         env:
           ID_TOKEN: ${{ env.ID_TOKEN }}
           JFROG_PLATFORM_URL: https://hts2.jfrog.io
@@ -28,19 +30,14 @@ jobs:
       - name: Install Internal Package
         env:
           ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
+          USERNAME: your_jfrog_username  # Replace with your JFrog username
         run: |
           # Create a temporary pip configuration file
           mkdir -p ~/.pip
           echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple" >> ~/.pip/pip.conf
+          echo "index-url = https://${USERNAME}:${ACCESS_TOKEN}@hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple" >> ~/.pip/pip.conf
           echo "[install]" >> ~/.pip/pip.conf
           echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
-          # Install the package using the access token
-          pip install --extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple \
-          --trusted-host hts2.jfrog.io \
-          hatch-showcase --no-cache-dir \
-          --user \
-          --timeout=30 \
-          --retries=3 \
-          --disable-pip-version-check
+          # Install the package using pip
+          pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
