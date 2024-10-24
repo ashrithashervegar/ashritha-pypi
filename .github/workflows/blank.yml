@@ -21,7 +21,7 @@ jobs:
     - name: Generate OIDC token
       id: oidc
       run: |
-        echo "OIDC_TOKEN=$(echo ${{ secrets.OIDC_TOKEN }})" >> $GITHUB_ENV  # Replace with actual OIDC generation command if needed
+        echo "OIDC_TOKEN=${{ secrets.OIDC_TOKEN }}" >> $GITHUB_ENV  # Adjust this as necessary for your OIDC generation
 
     - name: Configure pip to use Artifactory
       run: |
@@ -29,7 +29,7 @@ jobs:
         echo "[global]" > ~/.config/pip/pip.conf
         echo "extra-index-url=https://hts2.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.config/pip/pip.conf
         echo "[auth]" >> ~/.config/pip/pip.conf
-        echo "<your-artifactory-url> = ${OIDC_TOKEN}" >> ~/.config/pip/pip.conf
+        echo "https://hts2.jfrog.io/ = ${OIDC_TOKEN}" >> ~/.config/pip/pip.conf
 
     - name: Install Numpy
       run: |
