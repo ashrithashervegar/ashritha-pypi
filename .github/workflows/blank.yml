@@ -40,19 +40,13 @@ jobs:
           REPO_URL: "https://hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/"
         run: |
           PACKAGE_PATH=$(pip show hatch-showcase | grep Location | cut -d ' ' -f 2)  # Get installation directory
-          # Change to the package directory
+          # Navigate to the package directory
           cd "${PACKAGE_PATH}/hatch_showcase"
-          # Prepare the files to be uploaded
-          for file in *; do
-            if [[ -f "$file" ]]; then
-              echo "Uploading $file..."
-              response=$(curl -X PUT -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "Content-Type: application/octet-stream" -T "$file" "${REPO_URL}${file}" 2>&1)
-              echo "$response"
-              if [[ $? -ne 0 ]]; then
-                echo "Error uploading $file: $response"
-                exit 1
-              fi
-            else
-              echo "File $file does not exist."
-            fi
-          done
+          # Upload the package using the appropriate endpoint
+          echo "Uploading package to JFrog..."
+          response=$(curl -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "Content-Type: application/json" "${REPO_URL}" -d '{"name":"hatch-showcase","version":"1.0.0","files":[]}' 2>&1)
+          echo "$response"
+          if [[ $? -ne 0 ]]; then
+            echo "Error uploading package: $response"
+            exit 1
+          fi
