@@ -9,64 +9,34 @@ jobs:
   auth:
     permissions:
       contents: read
-      id-token: write
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get ID Token
-        id: get_id_token
-        run: |
-          ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=jfrog-github" | jq .value | tr -d '"')
-          echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-      - name: Exchange ID Token for Access Token
-        id: get_access_token
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install hatch-showcase
+
+      - name: Upload Package to JFrog
         env:
-          ID_TOKEN: ${{ env.ID_TOKEN }}
-          JFROG_PLATFORM_URL: https://hts2.jfrog.io
-        run: |
-          ACCESS_TOKEN=$(curl -X POST -H "Content-Type: application/json" "${JFROG_PLATFORM_URL}/access/api/v1/oidc/token" \
-          -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq -r .access_token)
-          echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
-
-      - name: Debug Environment Variables
-        run: |
-          echo "USERNAME=${{ secrets.JFROG_USERNAME }}"  # Ensure your JFrog username is stored in secrets
-          echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}"  # Be cautious about logging sensitive information
-
-      - name: Install Internal Package
-        env:
-          ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: ${{ secrets.JFROG_USERNAME }}  # Use a secret for the username
-        run: |
-          mkdir -p ~/.pip
-          echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://${USERNAME}:${ACCESS_TOKEN}@hts2.jfrog.io/artifactory/api/pypi/dev-pypi-local/simple" >> ~/.pip/pip.conf
-          echo "[install]" >> ~/.pip/pip.conf
-          echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
-
-          # Install the package using pip
-          pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
-
-      - name: List Installed Packages
-        run: |
-          # List installed packages to find their location
-          pip show hatch-showcase
-
-      - name: Upload Package to Remote Repository
-        env:
-          ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: ${{ secrets.JFROG_USERNAME }}  # Use a secret for the username
+          USERNAME: ${{ secrets.JFROG_USERNAME }}  # Your JFrog username from secrets
+          API_KEY: ${{ secrets.JFROG_API_KEY }}  # Your JFrog API key from secrets
         run: |
           PACKAGE_PATH=$(pip show hatch-showcase | grep Location | cut -d ' ' -f 2)  # Get installation directory
           REPO_URL="https://hts2.jfrog.io/artifactory/api/pypi/ashritha-pypi/"
-          
+
           # Loop through each package and upload
           for file in "${PACKAGE_PATH}/hatch_showcase/"*; do
             if [[ -f "$file" ]]; then  # Check if the file exists
               echo "Uploading $file..."
-              response=$(curl -X PUT -H "X-JFrog-Art-Api:${ACCESS_TOKEN}" -T "$file" "${REPO_URL}$(basename $file)" 2>&1)
+              response=$(curl -X PUT -u "${USERNAME}:${API_KEY}" -T "$file" "${REPO_URL}$(basename $file)" 2>&1)
               echo "$response"
               if [[ $? -ne 0 ]]; then
                 echo "Error uploading $file: $response"
@@ -76,3 +46,8 @@ jobs:
               echo "File $file does not exist."
             fi
           done
+
+      - name: Clean Up
+        run: |
+          # Remove the local package files if necessary
+          rm -rf ~/.local/lib/python3.10/site-packages/hatch_showcase/
