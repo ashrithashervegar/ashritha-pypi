@@ -20,12 +20,12 @@ jobs:
 
       - name: Configure pip to use Artifactory
         run: |
+          mkdir -p ~/.pip  # Create the .pip directory if it doesn't exist
           echo "[global]" > ~/.pip/pip.conf
           echo "index-url = https://incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
           echo "[auth]" >> ~/.pip/pip.conf
-          echo "<ARTIFACTORY_URL> = $USERNAME:$API_KEY" >> ~/.pip/pip.conf
+          echo "https://incloudmaster.jfrog.io = $USERNAME:$API_KEY" >> ~/.pip/pip.conf
         env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
           USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
 
