@@ -30,7 +30,7 @@ jobs:
       - name: Install Internal Package
         env:
           ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
-          USERNAME: your_jfrog_username  # Replace with your JFrog username
+          USERNAME: ashrithac  # Replace with your JFrog username
         run: |
           # Create a temporary pip configuration file
           mkdir -p ~/.pip
