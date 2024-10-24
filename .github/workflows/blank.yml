@@ -45,7 +45,7 @@ jobs:
           for file in "${PACKAGE_PATH}/hatch_showcase/"*; do
             if [[ -f "$file" ]]; then  # Check if the file exists
               echo "Uploading $file..."
-              response=$(curl -X PUT -H "Authorization: Bearer ${ACCESS_TOKEN}" -T "$file" "${REPO_URL}$(basename $file)" 2>&1)
+              response=$(curl -X PUT -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "Content-Type: application/octet-stream" -T "$file" "${REPO_URL}$(basename $file)" 2>&1)
               echo "$response"
               if [[ $? -ne 0 ]]; then
                 echo "Error uploading $file: $response"
