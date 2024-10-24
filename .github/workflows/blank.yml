@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir -p ~/.pip  # Create the .pip directory if it doesn't exist
           echo "[global]" > ~/.pip/pip.conf
-          echo "index-url = https://<USERNAME>:<PASSWORD>@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
+          echo "index-url = https://ashrithac:@Password24@incloudmaster.jfrog.io/artifactory/api/pypi/ashritha-pypi/simple" >> ~/.pip/pip.conf
         env:
           USERNAME: '<YOUR_USERNAME>'  # Replace with your Artifactory username
           PASSWORD: '<YOUR_PASSWORD>'  # Replace with your Artifactory password
