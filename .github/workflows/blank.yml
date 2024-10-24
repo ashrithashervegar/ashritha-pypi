@@ -1,14 +1,17 @@
 name: oidc-poc
+
 on:
   push:
     branches:
       - '*'
+
 jobs:
   auth:
     permissions:
       contents: read
       id-token: write
     runs-on: ubuntu-latest
+
     steps:
       - name: Get ID Token
         id: get_id_token
@@ -40,4 +43,20 @@ jobs:
           echo "trusted-host = hts2.jfrog.io" >> ~/.pip/pip.conf
 
           # Install the package using pip
-          pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check -vvv
+          pip install hatch-showcase --no-cache-dir --user --timeout=30 --retries=3 --disable-pip-version-check
+
+      - name: Upload Package to Remote Repository
+        env:
+          ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
+          USERNAME: ashrithac  # Replace with your JFrog username
+        run: |
+          # Install JFrog CLI
+          curl -fL https://getcli.jfrog.io | sh
+          chmod +x jfrog
+          sudo mv jfrog /usr/local/bin/
+
+          # Configure JFrog CLI
+          jfrog rt c --url ${JFROG_PLATFORM_URL} --user ${USERNAME} --password ${ACCESS_TOKEN}
+
+          # Upload the package to the remote repository
+          jfrog rt u "path/to/hatch-showcase/*" "ashritha-pypi/"
