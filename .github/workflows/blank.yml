@@ -24,14 +24,8 @@ jobs:
                     ACCESS_TOKEN=$(curl -XPOST -H "Content-Type: application/json" "https://hts2.jfrog.io/access/api/v1/oidc/token" -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq .access_token | tr -d '"')
                     echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
 
-            - name: Configure pip
-              run: |
-                    mkdir -p ~/.pip
-                    echo "[global]" > ~/.pip/pip.conf
-                    echo "extra-index-url = https://hts2.jfrog.io/artifactory/ashritha-pypi/simple" >> ~/.pip/pip.conf
-                    echo "[auth]" >> ~/.pip/pip.conf
-                    echo "Bearer = ${ACCESS_TOKEN}" >> ~/.pip/pip.conf
-
             - name: Install numpy from Artifactory
+              env:
+                    ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
               run: |
-                    pip install numpy --no-deps --no-cache-dir
+                    pip install numpy --no-deps --no-cache-dir --extra-index-url https://hts2.jfrog.io/artifactory/ashritha-pypi/simple --trusted-host hts2.jfrog.io --header "Authorization: Bearer ${ACCESS_TOKEN}"
