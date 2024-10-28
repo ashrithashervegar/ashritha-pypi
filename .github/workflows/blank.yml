@@ -26,7 +26,6 @@ jobs:
 
             - name: Create .pypirc
               run: |
-                    mkdir -p ~/.pypirc
                     echo "[distutils]" > ~/.pypirc
                     echo "index-servers = artifactory" >> ~/.pypirc
                     echo "[artifactory]" >> ~/.pypirc
