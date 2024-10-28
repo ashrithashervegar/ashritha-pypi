@@ -39,7 +39,20 @@ jobs:
               run: |
                     curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -X GET https://hts2.jfrog.io/artifactory/api/storage/dev-pypi-local/my_vulnerable_project/0.1.0/my_vulnerable_project-0.1.0-py3-none-any.whl -vvv
 
-            # Install numpy from JFrog Artifactory
-            - name: Install numpy from JFrog Artifactory
+            # Set up the environment for installing the package
+            - name: Set up Python environment
+              uses: actions/setup-python@v2
+              with:
+                    python-version: '3.10'
+
+            # Install dependencies using setup.py
+            - name: Install dependencies from setup.py
               run: |
-                    pip install numpy --no-deps --index-url "https://hts2.jfrog.io/artifactory/ashritha-pypi/simple?access_token=${{ env.ACCESS_TOKEN }}"
+                    pip install --upgrade pip
+                    pip install "numpy" --no-deps --index-url "https://hts2.jfrog.io/artifactory/ashritha-pypi/simple?access_token=${{ env.ACCESS_TOKEN }}"
+                    pip install .
+
+            # Run your application or tests if needed
+            - name: Run tests
+              run: |
+                    python -m unittest discover -s tests
