@@ -26,13 +26,12 @@ jobs:
 
             - name: Configure pip
               run: |
+                    mkdir -p ~/.pip
                     echo "[global]" > ~/.pip/pip.conf
                     echo "extra-index-url = https://hts2.jfrog.io/artifactory/ashritha-pypi/simple" >> ~/.pip/pip.conf
                     echo "[auth]" >> ~/.pip/pip.conf
                     echo "Bearer = ${ACCESS_TOKEN}" >> ~/.pip/pip.conf
 
             - name: Install numpy from Artifactory
-              env:
-                    ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
               run: |
                     pip install numpy --no-deps --no-cache-dir
