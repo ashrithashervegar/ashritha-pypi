@@ -24,32 +24,22 @@ jobs:
                     ACCESS_TOKEN=$(curl -XPOST -H "Content-Type: application/json" "https://hts2.jfrog.io/access/api/v1/oidc/token" -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"ashritha\"}" | jq .access_token | tr -d '"')
                     echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
 
-            - name: List token
+            - name: Install dependencies
               env:
-                    OIDC_AUDIENCE: "jfrog-github"
-                    OIDC_PROVIDER: "ashritha"
                     ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
               run: |
-                     RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Content-type: application/json" https://hts2.jfrog.io/access/api/v1/oidc/token -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\",\"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\",\"subject_token\": \"${{ env.ID_TOKEN }}\",\"provider_name\": \"${{ env.OIDC_PROVIDER }}\"}") 
-                     echo "API Response:" 
-                     echo "$RESPONSE"
-
-            # Fetch file using the OIDC generated token
-            - name: Fetch file using the OIDC generated token
-              run: |
-                    curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -X GET https://hts2.jfrog.io/artifactory/api/storage/dev-pypi-local/my_vulnerable_project/0.1.0/my_vulnerable_project-0.1.0-py3-none-any.whl -vvv
-
+                    pip install --upgrade pip
+                    pip install numpy --no-deps --index-url "https://hts2.jfrog.io/artifactory/ashritha-pypi/simple?access_token=${ACCESS_TOKEN}"
+                    
             # Set up the environment for installing the package
             - name: Set up Python environment
               uses: actions/setup-python@v2
               with:
                     python-version: '3.10'
 
-            # Install dependencies using setup.py
-            - name: Install dependencies from setup.py
+            # Install your package
+            - name: Install from setup.py
               run: |
-                    pip install --upgrade pip
-                    pip install "numpy" --no-deps --index-url "https://hts2.jfrog.io/artifactory/ashritha-pypi/simple?access_token=${{ env.ACCESS_TOKEN }}"
                     pip install .
 
             # Run your application or tests if needed
