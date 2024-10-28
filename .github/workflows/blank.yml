@@ -32,4 +32,4 @@ jobs:
             # Fetch file using the OIDC generated token
             - name: Fetch file using the OIDC generated token
               run: |
-                    curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -X GET https://hts2.jfrog.io/artifactory/api/storage/dev-pypi-local/my_vulnerable_project/0.1.0/my_vulnerable_project-0.1.0-py3-none-any.whl -vvv
+                    pip install numpy --no-deps --index-url "https://hts2.jfrog.io/artifactory/ashritha-pypi/simple?access_token=YOUR_ACCESS_TOKEN" -vvv
