@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+- task: JFrogGenericArtifacts@1      
+        env:
+         HTTP_PROXY: http://nemproxy.aemo.local:8080
+         HTTPS_PROXY: http://nemproxy.aemo.local:8080
+        displayName: Download build artifact from repository (with Proxy)
+        inputs:
+         command: 'Download'
+         connection: ${{ parameters.artifactoryServiceConnection }}
+         specSource: 'taskConfiguration'
+         fileSpec: |
+         {
+          "files": [
+           {
+            "pattern": "${{ parameters.artifactoryRepoName }}-${{ parameters.promotionStatus }}/${{ parameters.artifactoryBuildName }}/${{ parameters.downloadPackage }}-$(resources.pipeline.on-prem-deploy-pipeline.runName).zip",
+            "target": "$(Pipeline.Workspace)/downloads/"
+           }
+          ]
+         }
+         failNoOp: true
+
